@@ -3,11 +3,21 @@ plugins {
     id 'application'
 }
 
+application{
+    mainClass="ro.mpp.MainBD"
+}
+
 group = 'ro.mpp'
 version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'ro.mpp.MainBD'
+    }
 }
 
 dependencies {

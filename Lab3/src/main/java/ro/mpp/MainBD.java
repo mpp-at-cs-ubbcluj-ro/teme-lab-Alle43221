@@ -9,7 +9,7 @@ public class MainBD {
 
         Properties props=new Properties();
         try {
-            props.load(new FileReader("bd.config"));
+            props.load(new FileReader("target/bd.config"));
         } catch (IOException e) {
             System.out.println("Cannot find bd.config "+e);
         }

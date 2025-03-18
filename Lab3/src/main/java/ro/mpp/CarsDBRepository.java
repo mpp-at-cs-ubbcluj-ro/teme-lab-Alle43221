@@ -2,7 +2,9 @@ package ro.mpp;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +19,39 @@ public class CarsDBRepository implements CarRepository{
     private static final Logger logger= LogManager.getLogger();
 
     public CarsDBRepository(Properties props) {
+        Configurator.initialize(null, Paths.get("log4j2.xml").toString());
         logger.info("Initializing CarsDBRepository with properties: {} ",props);
         dbUtils=new JdbcUtils(props);
     }
 
     @Override
     public List<Car> findByManufacturer(String manufacturerN) {
- 	//to do 
-        return null;
+        logger.traceEntry("Finding cars by manufacturer: {}", manufacturerN);
+        List<Car> cars = new ArrayList<>();
+        Connection conn = dbUtils.getConnection();
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement(
+                "SELECT * FROM cars WHERE manufacturer = ?")) {
+            preparedStatement.setString(1, manufacturerN);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                Car car = new Car(
+                        resultSet.getString("manufacturer"),
+                        resultSet.getString("model"),
+                        resultSet.getInt("year")
+                );
+                car.setManufacturer(resultSet.getString("id"));
+                cars.add(car);
+            }
+
+        } catch (SQLException e) {
+            logger.error(e);
+            System.err.println("Error DB " + e);
+        }
+
+        logger.traceExit("Found {} cars", cars.size());
+        return cars;
     }
 
     @Override
@@ -38,7 +65,7 @@ public class CarsDBRepository implements CarRepository{
         logger.traceEntry("saving task {}",elem);
         Connection conn=dbUtils.getConnection();
         try(PreparedStatement preparedStatement=conn.prepareStatement(
-                "insert into Masini (manufacturer, model, year) values (?, ?, ?)"
+                "insert into cars (manufacturer, model, year) values (?, ?, ?)"
 
         )){
             preparedStatement.setString(1, elem.getManufacturer());
