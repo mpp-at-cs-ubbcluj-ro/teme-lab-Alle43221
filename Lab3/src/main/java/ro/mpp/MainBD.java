@@ -24,5 +24,7 @@ public class MainBD {
         for(Car car:carRepo.findByManufacturer(manufacturer))
             System.out.println(car);
 
+        carRepo.update(9, new Car("Cartof","Model S", 2019));
+
     }
 }

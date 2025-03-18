@@ -14,8 +14,6 @@ public class CarsDBRepository implements CarRepository{
 
     private JdbcUtils dbUtils;
 
-
-
     private static final Logger logger= LogManager.getLogger();
 
     public CarsDBRepository(Properties props) {
@@ -82,7 +80,23 @@ public class CarsDBRepository implements CarRepository{
 
     @Override
     public void update(Integer integer, Car elem) {
-      //to do
+        logger.traceEntry("updating task {}",elem);
+        Connection conn=dbUtils.getConnection();
+        try(PreparedStatement preparedStatement=conn.prepareStatement(
+                "update cars set manufacturer=?, model=?, year=? where id=?"
+
+        )){
+            preparedStatement.setString(1, elem.getManufacturer());
+            preparedStatement.setString(2, elem.getModel());
+            preparedStatement.setInt(3, elem.getYear());
+            preparedStatement.setInt(4, integer);
+            int result=preparedStatement.executeUpdate();
+            logger.traceExit("Updated {} instances", result);
+        } catch (SQLException e) {
+            logger.error(e);
+            System.err.println("Eror DB " + e);
+        }
+        logger.traceExit();
     }
 
     @Override
@@ -98,7 +112,7 @@ public class CarsDBRepository implements CarRepository{
                      String model=resultSet.getString("model");
                      int year=resultSet.getInt("year");
                      Car car= new Car(manufacturer,model,year);
-                     car.setId(car.getId());
+                     car.setId(id);
                      cars.add(car);
 
                  }
